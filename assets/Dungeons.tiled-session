@@ -27,6 +27,9 @@
                 "y": 194.5578231292517
             }
         },
+        "bossdungeon.tmx#tilemap_packed": {
+            "scaleInDock": 1
+        },
         "dungeon1.tmx": {
             "scale": 1.4,
             "selectedLayer": 0,
@@ -34,6 +37,9 @@
                 "x": 222.85714285714286,
                 "y": 236.42857142857142
             }
+        },
+        "dungeon1.tmx#tilemap_packed": {
+            "scaleInDock": 1
         },
         "dungeon2.tmx": {
             "scale": 1.1589,
@@ -43,6 +49,9 @@
                 "y": 223.48779014582792
             }
         },
+        "dungeon2.tmx#tilemap_packed": {
+            "scaleInDock": 1
+        },
         "dungeon3.tmx": {
             "scale": 1.47,
             "selectedLayer": 0,
@@ -51,9 +60,12 @@
                 "y": 200
             }
         },
+        "dungeon3.tmx#tilemap_packed": {
+            "scaleInDock": 1
+        },
         "tilemap_packed.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 6.02
         }
     },
     "last.exportedFilePath": "/Users/shiva/Documents/CMPM120/CMPM120_Final_Project/assets",
@@ -65,13 +77,22 @@
     "map.tileWidth": 16,
     "map.width": 25,
     "openFiles": [
-        "bossdungeon.tmx"
+        "bossdungeon.tmx",
+        "tilemap_packed.tsx",
+        "/Users/shiva/Documents/CMPM120/Pathfinder/assets/tiny-town-tileset.tmx",
+        "dungeon1.tmx",
+        "dungeon2.tmx",
+        "dungeon3.tmx"
     ],
     "project": "Dungeons.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "bossdungeon.tmx",
-        "tilemap_packed.tsx"
+        "dungeon3.tmx",
+        "dungeon2.tmx",
+        "dungeon1.tmx",
+        "/Users/shiva/Documents/CMPM120/Pathfinder/assets/tiny-town-tileset.tmx",
+        "tilemap_packed.tsx",
+        "bossdungeon.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
