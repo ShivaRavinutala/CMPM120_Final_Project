@@ -1,0 +1,67 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "bossdungeon.tmx": {
+            "scale": 1.474875,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 214.9334689380456,
+                "y": 194.9317738791423
+            }
+        },
+        "dungeon1.tmx": {
+            "scale": 1.4,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 226.42857142857144,
+                "y": 269.64285714285717
+            }
+        },
+        "dungeon2.tmx": {
+            "scale": 1.2493,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 175.69839109901542,
+                "y": 131.27351316737372
+            }
+        },
+        "dungeon3.tmx": {
+            "scale": 1.474875,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 220.01864564793627,
+                "y": 200.01695058903297
+            }
+        },
+        "tilemap_packed.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "/Users/shiva/Documents/CMPM120/CMPM120_Final_Project/assets",
+    "last.imagePath": "/Users/shiva/Documents/CMPM120/CMPM120_Final_Project/assets",
+    "map.height": 25,
+    "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 25,
+    "openFiles": [
+    ],
+    "project": "Dungeons.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "tilemap_packed.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}
