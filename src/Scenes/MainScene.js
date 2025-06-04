@@ -2,7 +2,7 @@ class MainScene extends Phaser.Scene {
     constructor() {
         super("mainScene");
     }
-
+  
     init() {
         this.playerSpeed = 200;
     }
