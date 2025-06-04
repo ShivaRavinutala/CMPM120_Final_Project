@@ -4,6 +4,7 @@
  <tile id="0">
   <properties>
    <property name="collides" type="bool" value="true"/>
+   <property name="cost" type="int" value="1000"/>
   </properties>
  </tile>
  <tile id="1">
@@ -23,12 +24,12 @@
  </tile>
  <tile id="4">
   <properties>
-   <property name="collides" type="bool" value="true"/>
+   <property name="collides" type="bool" value="false"/>
   </properties>
  </tile>
  <tile id="5">
   <properties>
-   <property name="collides" type="bool" value="true"/>
+   <property name="collides" type="bool" value="false"/>
   </properties>
  </tile>
  <tile id="6">
@@ -78,7 +79,7 @@
  </tile>
  <tile id="26">
   <properties>
-   <property name="collides" type="bool" value="true"/>
+   <property name="collides" type="bool" value="false"/>
   </properties>
  </tile>
  <tile id="27">
@@ -86,9 +87,19 @@
    <property name="collides" type="bool" value="true"/>
   </properties>
  </tile>
+ <tile id="30">
+  <properties>
+   <property name="cost" type="int" value="1"/>
+  </properties>
+ </tile>
  <tile id="40">
   <properties>
    <property name="collides" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="42">
+  <properties>
+   <property name="cost" type="int" value="1"/>
   </properties>
  </tile>
  <tile id="46">
@@ -99,6 +110,36 @@
  <tile id="47">
   <properties>
    <property name="collides" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="48">
+  <properties>
+   <property name="cost" type="int" value="1"/>
+  </properties>
+ </tile>
+ <tile id="49">
+  <properties>
+   <property name="cost" type="int" value="1"/>
+  </properties>
+ </tile>
+ <tile id="50">
+  <properties>
+   <property name="cost" type="int" value="1"/>
+  </properties>
+ </tile>
+ <tile id="51">
+  <properties>
+   <property name="cost" type="int" value="1"/>
+  </properties>
+ </tile>
+ <tile id="52">
+  <properties>
+   <property name="cost" type="int" value="1"/>
+  </properties>
+ </tile>
+ <tile id="53">
+  <properties>
+   <property name="cost" type="int" value="1"/>
   </properties>
  </tile>
  <tile id="57">

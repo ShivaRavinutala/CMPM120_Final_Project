@@ -3,40 +3,52 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "bossdungeon.tmx",
     "expandedProjectPaths": [
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
-        "bossdungeon.tmx": {
-            "scale": 1.474875,
+        "/Users/shiva/Documents/CMPM120/Pathfinder/assets/tiny-town-tileset.tmx": {
+            "scale": 0.9678125,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 214.9334689380456,
-                "y": 194.9317738791423
+                "x": 320.3099773974814,
+                "y": 200.45205037132706
+            }
+        },
+        "/Users/shiva/Documents/CMPM120/Pathfinder/assets/tiny-town-tileset.tmx#kenney-tiny-town": {
+            "scaleInDock": 1
+        },
+        "bossdungeon.tmx": {
+            "scale": 1.47,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 214.96598639455783,
+                "y": 194.5578231292517
             }
         },
         "dungeon1.tmx": {
             "scale": 1.4,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 226.42857142857144,
-                "y": 269.64285714285717
+                "x": 222.85714285714286,
+                "y": 236.42857142857142
             }
         },
         "dungeon2.tmx": {
-            "scale": 1.2493,
-            "selectedLayer": 1,
+            "scale": 1.1589,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 175.69839109901542,
-                "y": 131.27351316737372
+                "x": 185.52075243765637,
+                "y": 223.48779014582792
             }
         },
         "dungeon3.tmx": {
-            "scale": 1.474875,
+            "scale": 1.47,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 220.01864564793627,
-                "y": 200.01695058903297
+                "x": 219.7278911564626,
+                "y": 200
             }
         },
         "tilemap_packed.tsx": {
@@ -53,10 +65,12 @@
     "map.tileWidth": 16,
     "map.width": 25,
     "openFiles": [
+        "bossdungeon.tmx"
     ],
     "project": "Dungeons.tiled-project",
-    "property.type": "bool",
+    "property.type": "int",
     "recentFiles": [
+        "bossdungeon.tmx",
         "tilemap_packed.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
