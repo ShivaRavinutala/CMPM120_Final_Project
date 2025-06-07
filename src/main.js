@@ -24,7 +24,7 @@ let config = {
     },
     width: 800,
     height: 800,
-    scene: [MainScene]
+    scene: [AbilitySelect, Level1, Level2, Level3, BossLevel]
 }
 
 var cursors;
