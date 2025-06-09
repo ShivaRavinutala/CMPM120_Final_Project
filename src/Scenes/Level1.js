@@ -1,38 +1,3 @@
-class EnemyA extends Phaser.GameObjects.Sprite {
-    constructor(scene, x, y) {
-        super(scene, x, y, "tilemap_sheet", 86).setScale(3.0);
-        this.health = 3;
-        this.speed = 3; 
-
-        console.log(`[EnemyA] Constructor: Creating enemy at (${x}, ${y})`);
-        scene.add.existing(this);
-    }
-
-    preUpdate(time, delta) {
-        super.preUpdate(time, delta);
-
-        if (!this.scene || !this.scene.player || !this.scene.player.active) {
-            return;
-        }
-
-        const dx = this.scene.player.x - this.x;
-        const dy = this.scene.player.y - this.y;
-        const angle = Math.atan2(dy, dx);
-
-
-        this.x += Math.cos(angle) * this.speed; 
-        this.y += Math.sin(angle) * this.speed;
-
-       
-    }
-
-    
-    destroy(fromScene) {
-        console.log(`[EnemyA] Destroying enemy at (${this.x.toFixed(2)}, ${this.y.toFixed(2)})`);
-        super.destroy(fromScene);
-    }
-}
-
 class Level1 extends Phaser.Scene {
     constructor() {
         super("level1");
@@ -67,6 +32,7 @@ class Level1 extends Phaser.Scene {
 
         this.player = this.physics.add.sprite(100, 100, "tilemap_sheet", 97).setScale(3.0);
         this.player.setCollideWorldBounds(true);
+        this.sword = this.add.sprite(100, 100, "tilemap_sheet", 104).setScale(3.0);
 
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
@@ -82,35 +48,63 @@ class Level1 extends Phaser.Scene {
         this.ability_time = 10000;
         this.ability_active = false;
 
+        this.sword_attack_active = false;
+
+        this.player_projectiles = [];
+
         this.add.bitmapText(100, 100, 'font', this.ability + ': Press P', 20).setOrigin(0.5);
 
         // Enemy Group
-        this.enemyGroup = this.add.group({});
+         this.enemyGroup = this.add.group({});
 
         const enemyX = 400;
         const enemyY = 300;
-        const newEnemy = new EnemyA(this, enemyX, enemyY);
+        const newEnemy = new Blacksmith(this, enemyX, enemyY);
         this.enemyGroup.add(newEnemy);
+        this.cameras.main.setDeadzone(200, 200);
+        this.cameras.main.startFollow(this.player);
+
     }
 
     update(time, delta) {
         this.playerMovement(this.playerSpeed);
+        // this.sword.x = this.player.x;
+        // this.sword.y = this.player.y;
 
-        // Activate ability
+        if (this.spaceKey.isDown && !this.sword_attack_active) {
+            this.sword_attack_active = true;
+            this.attack_rotation = - Math.PI/4;
+            this.time_last_sword = time;
+        }
+        this.swordAttack(time);
+
+        if (this.pKey.isDown && this.ability_active && this.ability == 'Projectile') {
+            this.projectileAttack(this.playerSpeed * 2);
+        }
+
+        // Activate ability 
         if (this.pKey.isDown && !this.ability_used) {
             this.ability_used = true;
             this.ability_start = time;
             this.ability_active = true;
             if (this.ability == 'Speed Boost') {
                 this.playerSpeed *= 2;
-            } else if (this.ability == 'Invisiblity') {
-                // Stop Following Code
+            } else if (this.ability == 'Invisibility') {
+                this.player.setAlpha(0.5);
             } else if (this.ability == 'One-Hit') {
-                // On Attack, set enemy health to 0
+                
             } else if (this.ability == 'Invincibility') {
-                // On enemy contact, do not modify player health
+                this.prev_lives = this.lives;
+                this.lives = 1000000;
             } else if (this.ability == 'Screen-Wide Damage') {
                 // For loop through all enemies, and decrement health by 1
+                enemies.forEach((enemy, index) => {
+                    if (!enemy || !enemy.active) {
+                    
+                        return; 
+                    }
+                    enemy.takeDamage();
+                });
             } else if (this.ability == 'Projectile') {
                 // make key active that handles projectiles
             }
@@ -121,12 +115,12 @@ class Level1 extends Phaser.Scene {
             this.ability_active = false;
             if (this.ability == 'Speed Boost') {
                 this.playerSpeed /= 2;
-            } else if (this.ability == 'Invisiblity') {
-                // Resume Following Code
+            } else if (this.ability == 'Invisibility') {
+                this.player.setAlpha(1);
             } else if (this.ability == 'One-Hit') {
                 // On Attack, revert to decrement health
             } else if (this.ability == 'Invincibility') {
-                // On enemy contact, decrement player health
+                this.lives = this.prev_lives;
             } else if (this.ability == 'Screen-Wide Damage') {
                 
             } else if (this.ability == 'Projectile') {
@@ -152,6 +146,28 @@ class Level1 extends Phaser.Scene {
                 enemy.destroy(); 
                 console.log(`[Level1] Update: Enemy destroyed. Remaining enemies in group: ${this.enemyGroup.getLength()}`);
             }
+
+            if (this.sword_attack_active) {
+                if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), this.sword.getBounds())) {
+                    console.warn(`[Level1] Update: Collision detected between sword and enemy at (${enemy.x.toFixed(2)}, ${enemy.y.toFixed(2)})!`);
+                    console.log(`[Level1] Update: Player lives remaining: ${this.lives}`);
+                    if (this.ability_active && this.ability == 'One-Hit') {
+                        enemy.takeFullDamage();
+                    } else {
+                        enemy.takeDamage();
+                    }
+                    console.log(`[Level1] Update: Enemy destroyed. Remaining enemies in group: ${this.enemyGroup.getLength()}`);
+                }
+            }
+
+            for (let x = 0; x < this.player_projectiles.length; x++) {
+                if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), this.player_projectiles[x].getBounds())) {
+                    console.warn(`[Level1] Update: Collision detected between projectile and enemy at (${enemy.x.toFixed(2)}, ${enemy.y.toFixed(2)})!`);
+                    console.log(`[Level1] Update: Player lives remaining: ${this.lives}`);
+                    enemy.takeDamage();
+                    console.log(`[Level1] Update: Enemy destroyed. Remaining enemies in group: ${this.enemyGroup.getLength()}`);
+                }
+            }
         });
     }
 
@@ -171,6 +187,46 @@ class Level1 extends Phaser.Scene {
         }
 
         this.player.body.velocity.normalize().scale(speed);
+        this.base_sword_rotation = this.player.body.velocity.angle() + Math.PI / 2;
+        this.sword.rotation = this.base_sword_rotation + this.attack_rotation;
+        this.sword.x = this.player.x + 50 * Math.sin(this.sword.rotation);
+        this.sword.y = this.player.y - 50 * Math.cos(this.sword.rotation);
+    }
+
+    swordAttack(time) {
+        if (this.sword_attack_active && this.attack_rotation <= Math.PI/4) {
+            this.attack_rotation += 0.01 * (time - this.time_last_sword);
+            this.time_last_sword = time;
+        } else {
+            this.sword_attack_active = false;
+            this.attack_rotation = 0;
+        }
+    }
+
+    projectileAttack(speed) {
+
+        this.lastProjectile = this.time.now;
+
+        // Create the weapon projectile
+        const weapon = this.physics.add.sprite(this.player.x, this.player.y, 'tilemap_sheet', 101);
+
+        this.player_projectiles.push(weapon);
+
+        // Add overlap check between this specific weapon and the player
+        // this.physics.add.overlap(player, weapon, (playerRef, weaponRef) => {
+        //     // Deal damage or other effect here
+        //     console.log("Player hit by weapon!");
+        //     this.scene.lives--;
+        //     weaponRef.destroy(); // Destroy weapon on hit
+        // });
+
+        // Launch the weapon
+        
+        weapon.setVelocityX(speed * Math.cos(this.player.body.velocity.angle()));
+        weapon.setVelocityY(speed * Math.sin(this.player.body.velocity.angle()));
+
+        // Set the weapon's rotation to face the player
+        //weapon.rotation = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y);
     }
 
     // Just call this function when ready to move to next scene
