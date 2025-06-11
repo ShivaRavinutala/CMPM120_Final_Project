@@ -40,6 +40,8 @@ class Druid extends Phaser.GameObjects.Sprite{
 
         this.potions = [];
 
+        this.puddles = [];
+
         this.health = 3;
     }
 
@@ -205,6 +207,8 @@ class Druid extends Phaser.GameObjects.Sprite{
         });
 
         this.scene.time.delayedCall(5000, () => puddle.destroy());
+
+        this.puddles.push(puddle);
     }
 
     update(time, delta, player) {
@@ -214,39 +218,41 @@ class Druid extends Phaser.GameObjects.Sprite{
 
         if (!player || !player.active) return;
 
-        if (this.shouldMove && !(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
-            this.shouldMove = false;
-            let playerTileX = Math.floor(player.x / (16*3));
-            let playerTileY = Math.floor(player.y / (16*3));
-            console.log("In enemy update: ", playerTileX, playerTileY);
-            this.moveToSafeSpot(player);
-        }
-
-        if (time - this.lastAttackTime >= this.attackInterval) {
-            this.lastAttackTime = time;
-            this.shouldMove = true;
-        }
-
-        if (this.reachedSafeSpot && (Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y) <= (4 * 16 * 3)) && (this.cooldown === 0)) {
-            this.snipePlayer(player);
-            this.cooldown = 50;
-        }
-
-        this.potions = this.potions.filter(potion => {
-            const dist = Phaser.Math.Distance.Between(potion.x, potion.y, this.x, this.y);
-            console.log(dist, 4 * 16 * 3);
-            if (dist > 4 * 16 * 3) {  // 4 tiles
-                this.createPuddle(potion.x, potion.y);
-                potion.destroy();
-                return false;
+        if (!(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
+            if (this.shouldMove) {
+                this.shouldMove = false;
+                let playerTileX = Math.floor(player.x / (16*3));
+                let playerTileY = Math.floor(player.y / (16*3));
+                console.log("In enemy update: ", playerTileX, playerTileY);
+                this.moveToSafeSpot(player);
             }
 
-            this.scene.physics.add.overlap(this.scene.player, potion, () => {
-                this.scene.lives--;
-                potion.destroy();
+            if (time - this.lastAttackTime >= this.attackInterval) {
+                this.lastAttackTime = time;
+                this.shouldMove = true;
+            }
+
+            if (this.reachedSafeSpot && (Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y) <= (4 * 16 * 3)) && (this.cooldown === 0)) {
+                this.snipePlayer(player);
+                this.cooldown = 50;
+            }
+
+            this.potions = this.potions.filter(potion => {
+                const dist = Phaser.Math.Distance.Between(potion.x, potion.y, this.x, this.y);
+                console.log(dist, 4 * 16 * 3);
+                if (dist > 4 * 16 * 3) {  // 4 tiles
+                    this.createPuddle(potion.x, potion.y);
+                    potion.destroy();
+                    return false;
+                }
+
+                this.scene.physics.add.overlap(this.scene.player, potion, () => {
+                    this.scene.lives--;
+                    potion.destroy();
+                });
+                return true;
             });
-            return true;
-        });
+        }
 
         if (this.health <= 0) {
             this.destroy(this.scene);
@@ -265,6 +271,15 @@ class Druid extends Phaser.GameObjects.Sprite{
     
     destroy(fromScene) {
         console.log(`Druid Destroying enemy at (${this.x.toFixed(2)}, ${this.y.toFixed(2)})`);
+        for (let potion of this.potions) {
+            potion.destroy();
+        }
+        this.potions = [];
+
+        for (let puddle of this.puddles) {
+            puddle.destroy();
+        }
+        this.puddles = [];
         super.destroy(fromScene);
     }
 }
