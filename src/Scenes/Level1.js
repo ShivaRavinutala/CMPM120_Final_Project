@@ -52,6 +52,8 @@ class Level1 extends Phaser.Scene {
 
         this.player_projectiles = [];
 
+        this.time_last_sword = 0;
+
         this.add.bitmapText(100, 100, 'font', this.ability + ': Press P', 20).setOrigin(0.5);
 
         this.cameras.main.setDeadzone(200, 200);
@@ -107,18 +109,23 @@ class Level1 extends Phaser.Scene {
 
     update(time, delta) {
         const enemies = this.enemyGroup.getChildren();
+        
+        if (enemies.length == 0) {
+            this.complete();
+        }
+
         this.playerMovement(this.playerSpeed);
         // this.sword.x = this.player.x;
         // this.sword.y = this.player.y;
 
-        if (this.spaceKey.isDown && !this.sword_attack_active) {
+        if (this.spaceKey.isDown && !this.sword_attack_active && (time - this.time_last_sword > 500)) {
             this.sword_attack_active = true;
             this.attack_rotation = - Math.PI/4;
             this.time_last_sword = time;
         }
         this.swordAttack(time);
 
-        if (this.pKey.isDown && this.ability_active && this.ability == 'Projectile') {
+        if (Phaser.Input.Keyboard.JustDown(this.pKey) && this.ability_active && this.ability == 'Projectile') {
             this.projectileAttack(this.playerSpeed * 2);
         }
 
@@ -244,29 +251,13 @@ class Level1 extends Phaser.Scene {
     }
 
     projectileAttack(speed) {
-
-        this.lastProjectile = this.time.now;
-
         // Create the weapon projectile
         const weapon = this.physics.add.sprite(this.player.x, this.player.y, 'tilemap_sheet', 101);
 
         this.player_projectiles.push(weapon);
 
-        // Add overlap check between this specific weapon and the player
-        // this.physics.add.overlap(player, weapon, (playerRef, weaponRef) => {
-        //     // Deal damage or other effect here
-        //     console.log("Player hit by weapon!");
-        //     this.scene.lives--;
-        //     weaponRef.destroy(); // Destroy weapon on hit
-        // });
-
-        // Launch the weapon
-        
         weapon.setVelocityX(speed * Math.cos(this.player.body.velocity.angle()));
         weapon.setVelocityY(speed * Math.sin(this.player.body.velocity.angle()));
-
-        // Set the weapon's rotation to face the player
-        //weapon.rotation = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y);
     }
 
     // Just call this function when ready to move to next scene
