@@ -49,6 +49,8 @@ class Druid extends Phaser.GameObjects.Sprite{
         if (!this.scene || !this.scene.player || !this.scene.player.active) {
             return;
         }
+
+        this.update(time, delta, this.scene.player);
     }
 
     async moveToSafeSpot(player) {
@@ -212,7 +214,7 @@ class Druid extends Phaser.GameObjects.Sprite{
 
         if (!player || !player.active) return;
 
-        if (this.shouldMove) {
+        if (this.shouldMove && !(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
             this.shouldMove = false;
             let playerTileX = Math.floor(player.x / (16*3));
             let playerTileY = Math.floor(player.y / (16*3));

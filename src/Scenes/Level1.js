@@ -54,19 +54,59 @@ class Level1 extends Phaser.Scene {
 
         this.add.bitmapText(100, 100, 'font', this.ability + ': Press P', 20).setOrigin(0.5);
 
+        this.cameras.main.setDeadzone(200, 200);
+        this.cameras.main.startFollow(this.player);
+
         // Enemy Group
          this.enemyGroup = this.add.group({});
 
-        const enemyX = 400;
-        const enemyY = 300;
-        const newEnemy = new Blacksmith(this, enemyX, enemyY);
-        this.enemyGroup.add(newEnemy);
-        this.cameras.main.setDeadzone(200, 200);
-        this.cameras.main.startFollow(this.player);
+         let numRows = this.groundLayer.layer.height;
+         let numCols = this.groundLayer.layer.width;
+         let validCoords = [];
+
+         for (let x = 0; x < numCols; x++) {
+                for (let y = 0; y < numRows; y++) {
+                    let tile = this.groundLayer.getTileAt(x,y);
+                    if (tile != null && tile.properties['cost'] == 1) {
+                        let worldX = 48 * x;
+                        let worldY = 48 * y;
+                        validCoords.push([worldX, worldY]);
+                        
+                    }
+                }
+            }
+            const NUM_GHOULS = 2;
+            const NUM_BLACKSMITH = 2;
+            const NUM_VIKING = 2;
+            const NUM_DRUID = 2;
+            for (let x = 0; x < NUM_GHOULS; x++) {
+                let random_pick = Math.floor(Math.random() * validCoords.length);
+                const newEnemy = new Ghoul(this, validCoords[random_pick][0], validCoords[random_pick][1]);
+                this.enemyGroup.add(newEnemy);
+            }
+
+            for (let x = 0; x < NUM_BLACKSMITH; x++) {
+                let random_pick = Math.floor(Math.random() * validCoords.length);
+                const newEnemy = new Blacksmith(this, validCoords[random_pick][0], validCoords[random_pick][1]);
+                this.enemyGroup.add(newEnemy);
+            }
+
+            for (let x = 0; x < NUM_VIKING; x++) {
+                let random_pick = Math.floor(Math.random() * validCoords.length);
+                const newEnemy = new Viking(this, validCoords[random_pick][0], validCoords[random_pick][1]);
+                this.enemyGroup.add(newEnemy);
+            }
+
+            for (let x = 0; x < NUM_DRUID; x++) {
+                let random_pick = Math.floor(Math.random() * validCoords.length);
+                const newEnemy = new Druid(this, validCoords[random_pick][0], validCoords[random_pick][1]);
+                this.enemyGroup.add(newEnemy);
+            }
 
     }
 
     update(time, delta) {
+        const enemies = this.enemyGroup.getChildren();
         this.playerMovement(this.playerSpeed);
         // this.sword.x = this.player.x;
         // this.sword.y = this.player.y;
@@ -128,7 +168,7 @@ class Level1 extends Phaser.Scene {
             }
         }
 
-        const enemies = this.enemyGroup.getChildren();
+        
         if (enemies.length > 0) {
         }
 
