@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "bossdungeon.tmx",
+    "activeFile": "dungeon3.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -64,7 +64,7 @@
             "scaleInDock": 1
         },
         "tilemap_packed.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 2.3737,
             "scaleInEditor": 6.02
         }
     },
@@ -87,12 +87,12 @@
     "project": "Dungeons.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "dungeon3.tmx",
-        "dungeon2.tmx",
-        "dungeon1.tmx",
-        "/Users/shiva/Documents/CMPM120/Pathfinder/assets/tiny-town-tileset.tmx",
+        "bossdungeon.tmx",
         "tilemap_packed.tsx",
-        "bossdungeon.tmx"
+        "/Users/shiva/Documents/CMPM120/Pathfinder/assets/tiny-town-tileset.tmx",
+        "dungeon1.tmx",
+        "dungeon2.tmx",
+        "dungeon3.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
