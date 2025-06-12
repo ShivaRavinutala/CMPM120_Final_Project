@@ -435,6 +435,7 @@ class BossLevel extends Phaser.Scene {
         this.sword_attack_active = false;
         this.attack_rotation = 0;
         this.base_sword_rotation = 0;
+        this.time_last_sword = 0;
 
         this.boss = new Boss(this, 600, 400, this.bossStage);
 
