@@ -77,10 +77,10 @@ class Level3 extends Phaser.Scene {
                     }
                 }
             }
-            const NUM_GHOULS = 2;
-            const NUM_BLACKSMITH = 2;
-            const NUM_VIKING = 2;
-            const NUM_DRUID = 2;
+            const NUM_GHOULS = 3;
+            const NUM_BLACKSMITH = 3;
+            const NUM_VIKING = 3;
+            const NUM_DRUID = 3;
             for (let x = 0; x < NUM_GHOULS; x++) {
                 let random_pick = Math.floor(Math.random() * validCoords.length);
                 const newEnemy = new Ghoul(this, validCoords[random_pick][0], validCoords[random_pick][1]);
