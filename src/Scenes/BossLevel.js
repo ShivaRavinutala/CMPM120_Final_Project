@@ -552,7 +552,7 @@ class BossLevel extends Phaser.Scene {
         if (this.remaining_levels == 1) {
             this.scene.start("endScene");
         } else {
-            this.scene.start("AbilitySelect", {
+            this.scene.start("abilitySelect", {
                 cur_level: this.bossStage,
                 remaining_abilities: this.remaining_abilities
             });
