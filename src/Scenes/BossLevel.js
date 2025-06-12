@@ -11,7 +11,7 @@ class Boss extends Phaser.GameObjects.Sprite {
         super(scene, x, y, "tilemap_sheet", 87).setScale(3.0);
 
         this.level = level;
-        this.maxHealth = 15;
+        this.maxHealth = 12;
         this.health = this.maxHealth;
         this.phase = 1; 
         this.spriteScale = 3.0;
@@ -28,12 +28,10 @@ class Boss extends Phaser.GameObjects.Sprite {
         this.shortDashCooldown = 500;
         this.longDashCooldown = 4500;
 
-        // Phase 2 (Level 2+) ability
         this.tileSpawnHealthThreshold = this.maxHealth - 4;
         this.hasSpawnedHazardZones = false;
         this.hazardZoneProjectiles = [];
 
-        // Phase 3 (Level 3 only) ability
         this.phase2HealthThreshold = this.maxHealth - 4;
         this.phase3HealthThreshold = this.maxHealth - 8;
         this.lastThrowTime = -5000;
@@ -98,14 +96,12 @@ class Boss extends Phaser.GameObjects.Sprite {
         const dashRange = 5 * TILE_WORLD_SIZE;
         const throwAttackRange = 8 * TILE_WORLD_SIZE; 
 
-        // Phase 3: Cone attack
         if (this.level === 3 && this.phase === 3 &&
             this.state === Boss.STATES.CHASING &&
             distanceToPlayer <= throwAttackRange &&
             time - this.lastThrowTime > this.throwingCooldown) {
             this.throwWeapons();
         }
-        // Phase 1: Dash attack
         else if (this.state === Boss.STATES.CHASING &&
             distanceToPlayer <= dashRange &&
             time - this.lastDashTime > this.longDashCooldown) {
@@ -184,7 +180,6 @@ class Boss extends Phaser.GameObjects.Sprite {
         }
     
         if (!this.scene.enemyProjectiles) {
-            console.warn("Scene is missing 'enemyProjectiles' group for boss attack.");
             this.state = Boss.STATES.CHASING;
             return;
         }
@@ -218,7 +213,6 @@ class Boss extends Phaser.GameObjects.Sprite {
 
     spawnHazardZones() {
         if (!this.scene.enemyProjectiles) {
-            console.warn("Scene is missing 'enemyProjectiles' group for boss hazard zone attack.");
             return;
         }
         
@@ -349,21 +343,17 @@ class Boss extends Phaser.GameObjects.Sprite {
             }
         });
 
-        // Phase 2 transition (Level 2+ boss)
         if (this.level >= 2 && !this.hasSpawnedHazardZones && this.health <= this.tileSpawnHealthThreshold) {
             this.spawnHazardZones();
             this.hasSpawnedHazardZones = true;
         }
 
-        // Phase 3 transition (Level 3 boss only)
         if (this.level === 3) {
             if (this.phase < 3 && this.health <= this.phase3HealthThreshold) {
                 this.phase = 3;
-                console.log("BOSS: PHASE 3 ACTIVATED");
                 this.triggerPhaseChangeEffects();
             } else if (this.phase < 2 && this.health <= this.phase2HealthThreshold) {
                 this.phase = 2;
-                console.log("BOSS: PHASE 2 ACTIVATED");
                 this.triggerPhaseChangeEffects();
             }
         }
@@ -401,7 +391,6 @@ class BossLevel extends Phaser.Scene {
         this.remaining_abilities = data.remaining_abilities;
         this.remaining_levels = data.remaining_levels;
         this.playerCanTakeDamage = true;
-        console.log(this.remaining_levels);
     }
 
     preload() {
@@ -433,6 +422,9 @@ class BossLevel extends Phaser.Scene {
         this.sword = this.physics.add.sprite(this.player.x, this.player.y, 'tilemap_sheet', 104).setScale(3.0);
         this.sword.body.setEnable(false);
 
+        this.cameras.main.setBounds(0, 0, this.map.widthInPixels * this.groundLayer.scaleX, this.map.heightInPixels * this.groundLayer.scaleY);
+        this.cameras.main.startFollow(this.player);
+
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.wKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
@@ -443,7 +435,6 @@ class BossLevel extends Phaser.Scene {
         this.sword_attack_active = false;
         this.attack_rotation = 0;
         this.base_sword_rotation = 0;
-        this.time_last_sword = 0;
 
         this.boss = new Boss(this, 600, 400, this.bossStage);
 
@@ -511,7 +502,7 @@ class BossLevel extends Phaser.Scene {
             this.complete();
         }
 
-        if (this.spaceKey.isDown && !this.sword_attack_active && (time - this.time_last_sword > 500)) {
+        if (this.spaceKey.isDown && !this.sword_attack_active) {
             this.sword_attack_active = true;
             this.attack_rotation = -Math.PI / 4;
             this.time_last_sword = time;
@@ -561,10 +552,9 @@ class BossLevel extends Phaser.Scene {
         if (this.remaining_levels == 1) {
             this.scene.start("endScene");
         } else {
-            this.scene.start("abilitySelect", {
+            this.scene.start("AbilitySelect", {
                 cur_level: this.bossStage,
-                remaining_abilities: this.remaining_abilities,
-                remaining_levels: this.remaining_levels
+                remaining_abilities: this.remaining_abilities
             });
         }
     }

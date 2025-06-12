@@ -2,6 +2,7 @@ class Blacksmith extends Phaser.GameObjects.Sprite {
 
     static STATES = {
         CHASING: 'chasing',
+        ATTACKING: 'attacking' 
     };
 
     constructor(scene, x, y) {
@@ -63,7 +64,7 @@ class Blacksmith extends Phaser.GameObjects.Sprite {
         // --- Handle Projectiles ---
         this.projectiles = this.projectiles.filter(weapon => {
             // Destroy projectile if it flies too far
-            if (Phaser.Math.Distance.Between(this.x, this.y, weapon.x, weapon.y) > this.attackRange + 50) {
+            if (weapon.active && Phaser.Math.Distance.Between(this.x, this.y, weapon.x, weapon.y) > this.attackRange + 50) {
                 weapon.destroy();
                 return false;
             }
@@ -74,56 +75,71 @@ class Blacksmith extends Phaser.GameObjects.Sprite {
         const distanceToPlayer = Phaser.Math.Distance.Between(this.x, this.y, player.x, player.y);
 
         // --- Attack Logic ---
-        if (distanceToPlayer <= this.attackRange && time - this.lastAttackTime > this.attackCooldown && !(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
+        if (this.state === Blacksmith.STATES.CHASING &&
+            distanceToPlayer <= this.attackRange && 
+            time - this.lastAttackTime > this.attackCooldown && 
+            !(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
             this.throwWeaponAtPlayer(player);
         }
 
 
         // --- Movement Logic ---
-        // Always chase, even when attacking
-        if (time - this.lastPathRecalculation > this.pathRecalculationInterval && !(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
+        if (this.state === Blacksmith.STATES.CHASING && time - this.lastPathRecalculation > this.pathRecalculationInterval && !(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
             this.updatePath(player);
             this.lastPathRecalculation = time;
         }
 
         if (this.health <= 0) {
-            this.destroy(this.scene);
+            this.destroy();
         }
     }
 
     throwWeaponAtPlayer(player) {
         if (!player.active) return;
-
+        
+        this.state = Blacksmith.STATES.ATTACKING;
         this.lastAttackTime = this.scene.time.now;
 
-        // Stop moving briefly to attack
         if (this.moveTween) {
             this.moveTween.stop();
         }
 
-        // Create the weapon projectile
-        const weapon = this.scene.physics.add.sprite(this.x, this.y, 'tilemap_sheet', 117);
-        weapon.setScale(this.spriteScale).setOrigin(0.5, 0.5);
+        if (!this.scene.enemyProjectiles) {
+            this.state = Blacksmith.STATES.CHASING; 
+            return;
+        }
 
-        this.projectiles.push(weapon);
+        const angleToPlayer = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y);
+        const throwAngleOffset = Phaser.Math.DegToRad(25); 
 
-        // Add overlap check between this specific weapon and the player
-        this.scene.physics.add.overlap(player, weapon, (playerRef, weaponRef) => {
-            // Deal damage or other effect here
-            console.log("Player hit by weapon!");
-            this.scene.lives--;
-            weaponRef.destroy(); // Destroy weapon on hit
+        const angles = [
+            angleToPlayer - throwAngleOffset,
+            angleToPlayer,
+            angleToPlayer + throwAngleOffset
+        ];
+
+        angles.forEach(angle => {
+            const projectile = this.scene.physics.add.sprite(this.x, this.y, 'tilemap_sheet', 117);
+            
+            this.scene.enemyProjectiles.add(projectile);
+            
+            projectile.setScale(this.spriteScale).setOrigin(0.5, 0.5);
+            projectile.rotation = angle;
+    
+            this.scene.physics.velocityFromRotation(angle, this.weaponSpeed, projectile.body.velocity);
+    
+            this.projectiles.push(projectile);
         });
 
-        // Launch the weapon
-        this.scene.physics.moveToObject(weapon, player, this.weaponSpeed);
-
-        // Set the weapon's rotation to face the player
-        weapon.rotation = Phaser.Math.Angle.Between(this.x, this.y, player.x, player.y);
+        this.scene.time.delayedCall(500, () => {
+            if (this.active) {
+                this.state = Blacksmith.STATES.CHASING;
+            }
+        });
     }
 
     updatePath(player) {
-        if (!player) return;
+        if (!player || this.state !== Blacksmith.STATES.CHASING) return;
 
         const TILE_WORLD_SIZE = this.scene.map.tileWidth * this.spriteScale;
         const fromTileX = Math.floor(this.x / TILE_WORLD_SIZE);
@@ -132,7 +148,7 @@ class Blacksmith extends Phaser.GameObjects.Sprite {
         const toTileY = Math.floor(player.y / TILE_WORLD_SIZE);
 
         this.finder.findPath(fromTileX, fromTileY, toTileX, toTileY, (path) => {
-            if (path !== null) {
+            if (path !== null && path.length > 1) {
                 this.followPath(path);
             }
         });
@@ -143,10 +159,12 @@ class Blacksmith extends Phaser.GameObjects.Sprite {
         if (this.moveTween) {
             this.moveTween.stop();
         }
+        
+        if(this.state !== Blacksmith.STATES.CHASING) return;
 
         const TILE_WORLD_SIZE = this.scene.map.tileWidth * this.spriteScale;
         const tweens = [];
-        for (let i = 0; i < path.length; i++) {
+        for (let i = 1; i < path.length; i++) { 
             tweens.push({
                 x: path[i].x * TILE_WORLD_SIZE + (TILE_WORLD_SIZE / 2),
                 y: path[i].y * TILE_WORLD_SIZE + (TILE_WORLD_SIZE / 2),
@@ -171,10 +189,15 @@ class Blacksmith extends Phaser.GameObjects.Sprite {
     }
 
     destroy(fromScene) {
-        if (this.moveTween) this.moveTween.stop();
-        this.scene.tweens.killTweensOf(this);
-        // Clean up any remaining projectiles
-        this.projectiles.forEach(p => p.destroy());
+        if (this.moveTween) {
+            this.moveTween.stop();
+        }
+        
+        if (this.scene && this.scene.tweens) {
+            this.scene.tweens.killTweensOf(this);
+        }
+
+        this.projectiles.forEach(p => {if(p && p.active) p.destroy()});
         this.projectiles = [];
 
         super.destroy(fromScene);

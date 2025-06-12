@@ -7,7 +7,6 @@ class Viking extends Phaser.GameObjects.Sprite {
     };
 
     constructor(scene, x, y) {
-        // Call the Sprite constructor
         super(scene, x, y, "tilemap_sheet", 87).setScale(3.0);
 
         this.health = 3;
@@ -15,7 +14,6 @@ class Viking extends Phaser.GameObjects.Sprite {
         this.dashSpeed = 2;
         this.spriteScale = 3.0;
 
-        // Add the enemy sprite itself to the scene and physics engine
         scene.add.existing(this);
         scene.physics.add.existing(this);
 
@@ -26,10 +24,9 @@ class Viking extends Phaser.GameObjects.Sprite {
         this.dashCooldown = 4500;
         this.stunDuration = 1500;
 
-        // Weapon setup - created as a separate sprite in the scene
         this.weapon = scene.add.sprite(this.x, this.y, 'tilemap_sheet', 118).setScale(this.spriteScale);
         this.weapon.setOrigin(0.5, 1.25);
-        this.weapon.setVisible(false); // Hide it initially
+        this.weapon.setVisible(false); 
 
         this.finder = new EasyStar.js();
         const grid = [];
@@ -69,13 +66,14 @@ class Viking extends Phaser.GameObjects.Sprite {
 
         if (this.state === Viking.STATES.CHASING &&
             distanceToPlayer <= dashRange &&
-            time - this.lastDashTime > this.dashCooldown) {
+            time - this.lastDashTime > this.dashCooldown && 
+            !(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
             this.dashAtPlayer(player);
         }
 
         switch (this.state) {
             case Viking.STATES.CHASING:
-                if (time - this.lastPathRecalculation > this.pathRecalculationInterval) {
+                if (time - this.lastPathRecalculation > this.pathRecalculationInterval && !(this.scene.ability_active && this.scene.ability == 'Invisibility')) {
                     this.updatePath(player);
                     this.lastPathRecalculation = time;
                 }
@@ -87,12 +85,12 @@ class Viking extends Phaser.GameObjects.Sprite {
         }
 
         if (this.health <= 0) {
-            this.destroy(this.scene);
+            this.destroy();
         }
     }
 
     updatePath(player) {
-        if (!player || this.state !== Viking.STATES.CHASING) return;
+        if (!player || this.state !== Viking.STATES.CHASING || (this.scene.ability_active && this.scene.ability == 'Invisibility')) return;
 
         const TILE_WORLD_SIZE = this.scene.map.tileWidth * this.spriteScale;
         const fromTileX = Math.floor(this.x / TILE_WORLD_SIZE);
@@ -101,7 +99,7 @@ class Viking extends Phaser.GameObjects.Sprite {
         const toTileY = Math.floor(player.y / TILE_WORLD_SIZE);
 
         this.finder.findPath(fromTileX, fromTileY, toTileX, toTileY, (path) => {
-            if (path !== null) {
+            if (path !== null && path.length > 1) {
                 this.followPath(path);
             }
         });
@@ -119,7 +117,7 @@ class Viking extends Phaser.GameObjects.Sprite {
 
         const TILE_WORLD_SIZE = this.scene.map.tileWidth * this.spriteScale;
         const tweens = [];
-        for (let i = 0; i < path.length; i++) {
+        for (let i = 1; i < path.length; i++) {
             tweens.push({
                 x: path[i].x * TILE_WORLD_SIZE + (TILE_WORLD_SIZE / 2),
                 y: path[i].y * TILE_WORLD_SIZE + (TILE_WORLD_SIZE / 2),
@@ -136,6 +134,8 @@ class Viking extends Phaser.GameObjects.Sprite {
     }
 
     dashAtPlayer(player) {
+        if (!player.active) return;
+        
         if (this.moveTween) {
             this.moveTween.stop();
         }
@@ -152,13 +152,15 @@ class Viking extends Phaser.GameObjects.Sprite {
         const duration = (distance / this.dashSpeed) * 16.67;
 
         this.scene.tweens.add({
-            targets: [this, this.weapon], // Tween both the enemy and the weapon
+            targets: [this, this.weapon], 
             x: player.x,
             y: player.y,
             duration: Math.max(200, duration),
             ease: 'Power2',
             onComplete: () => {
-                this.getStunned();
+                if (this.active) {
+                    this.getStunned();
+                }
             }
         });
     }
@@ -169,7 +171,9 @@ class Viking extends Phaser.GameObjects.Sprite {
         this.weapon.setVisible(false);
 
         this.scene.time.delayedCall(this.stunDuration, () => {
-            this.state = Viking.STATES.CHASING;
+            if (this.active) {
+                this.state = Viking.STATES.CHASING;
+            }
         });
     }
 
@@ -183,7 +187,11 @@ class Viking extends Phaser.GameObjects.Sprite {
 
     destroy(fromScene) {
         if (this.moveTween) this.moveTween.stop();
-        this.scene.tweens.killTweensOf(this);
+        
+        if (this.scene && this.scene.tweens) {
+            this.scene.tweens.killTweensOf(this);
+        }
+
         if (this.weapon) {
             this.weapon.destroy();
         }

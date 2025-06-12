@@ -22,7 +22,6 @@ class Level1 extends Phaser.Scene {
     }
 
     create() {
-        // player movement code
         this.map = this.add.tilemap("dungeon1",16,16, 25,25,); 
         this.tileset = this.map.addTilesetImage("tilemap_packed", "tilemap_packed");
         this.groundLayer = this.map.createLayer("Ground", this.tileset, 0, 0);
@@ -30,9 +29,13 @@ class Level1 extends Phaser.Scene {
         this.boundaryLayer = this.map.createLayer("Boundary", this.tileset, 0, 0);
         this.boundaryLayer.setScale(3.0);
 
+        this.boundaryLayer.setCollisionByProperty({ collides: true });
+
         this.player = this.physics.add.sprite(100, 100, "tilemap_sheet", 97).setScale(3.0);
         this.player.setCollideWorldBounds(true);
         this.sword = this.add.sprite(100, 100, "tilemap_sheet", 104).setScale(3.0);
+
+        this.physics.add.collider(this.player, this.boundaryLayer);
 
         this.aKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
         this.dKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
@@ -40,8 +43,6 @@ class Level1 extends Phaser.Scene {
         this.sKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.pKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
-
-        // end of player movement code
 
         this.lives = 3;
         this.ability_used = false;
@@ -56,10 +57,9 @@ class Level1 extends Phaser.Scene {
 
         this.add.bitmapText(100, 100, 'font', this.ability + ': Press P', 20).setOrigin(0.5);
 
-        this.cameras.main.setDeadzone(200, 200);
+        this.cameras.main.setBounds(0, 0, this.map.widthInPixels * this.groundLayer.scaleX, this.map.heightInPixels * this.groundLayer.scaleY);
         this.cameras.main.startFollow(this.player);
 
-        // Enemy Group
          this.enemyGroup = this.add.group({});
 
          let numRows = this.groundLayer.layer.height;
@@ -108,6 +108,14 @@ class Level1 extends Phaser.Scene {
     }
 
     update(time, delta) {
+        if (this.lives <= 0) {
+            this.scene.restart({
+                remaining_abilities: this.remaining_abilities,
+                selected_ability: this.ability,
+                remaining_levels: this.remaining_levels
+            });
+        }
+
         const enemies = this.enemyGroup.getChildren();
         
         if (enemies.length == 0) {
@@ -115,8 +123,6 @@ class Level1 extends Phaser.Scene {
         }
 
         this.playerMovement(this.playerSpeed);
-        // this.sword.x = this.player.x;
-        // this.sword.y = this.player.y;
 
         if (this.spaceKey.isDown && !this.sword_attack_active && (time - this.time_last_sword > 500)) {
             this.sword_attack_active = true;
@@ -129,7 +135,6 @@ class Level1 extends Phaser.Scene {
             this.projectileAttack(this.playerSpeed * 2);
         }
 
-        // Activate ability 
         if (this.pKey.isDown && !this.ability_used) {
             this.ability_used = true;
             this.ability_start = time;
@@ -144,20 +149,16 @@ class Level1 extends Phaser.Scene {
                 this.prev_lives = this.lives;
                 this.lives = 1000000;
             } else if (this.ability == 'Screen-Wide Damage') {
-                // For loop through all enemies, and decrement health by 1
                 enemies.forEach((enemy, index) => {
                     if (!enemy || !enemy.active) {
-                    
                         return; 
                     }
                     enemy.takeDamage();
                 });
             } else if (this.ability == 'Projectile') {
-                // make key active that handles projectiles
             }
         }
 
-        // Ability finished
         if (this.ability_active && time - this.ability_start > this.ability_time) {
             this.ability_active = false;
             if (this.ability == 'Speed Boost') {
@@ -165,54 +166,36 @@ class Level1 extends Phaser.Scene {
             } else if (this.ability == 'Invisibility') {
                 this.player.setAlpha(1);
             } else if (this.ability == 'One-Hit') {
-                // On Attack, revert to decrement health
             } else if (this.ability == 'Invincibility') {
                 this.lives = this.prev_lives;
             } else if (this.ability == 'Screen-Wide Damage') {
-                
             } else if (this.ability == 'Projectile') {
-                // Deactivate key that shoots projectiles
             }
-        }
-
-        
-        if (enemies.length > 0) {
         }
 
         enemies.forEach((enemy, index) => {
             if (!enemy || !enemy.active) {
-              
                 return; 
             }
 
-
             if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), this.player.getBounds())) {
-                console.warn(`[Level1] Update: Collision detected between player and enemy at (${enemy.x.toFixed(2)}, ${enemy.y.toFixed(2)})!`);
                 this.lives -= 1;
-                console.log(`[Level1] Update: Player lives remaining: ${this.lives}`);
                 enemy.destroy(); 
-                console.log(`[Level1] Update: Enemy destroyed. Remaining enemies in group: ${this.enemyGroup.getLength()}`);
             }
 
             if (this.sword_attack_active) {
                 if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), this.sword.getBounds())) {
-                    console.warn(`[Level1] Update: Collision detected between sword and enemy at (${enemy.x.toFixed(2)}, ${enemy.y.toFixed(2)})!`);
-                    console.log(`[Level1] Update: Player lives remaining: ${this.lives}`);
                     if (this.ability_active && this.ability == 'One-Hit') {
                         enemy.takeFullDamage();
                     } else {
                         enemy.takeDamage();
                     }
-                    console.log(`[Level1] Update: Enemy destroyed. Remaining enemies in group: ${this.enemyGroup.getLength()}`);
                 }
             }
 
             for (let x = 0; x < this.player_projectiles.length; x++) {
                 if (Phaser.Geom.Intersects.RectangleToRectangle(enemy.getBounds(), this.player_projectiles[x].getBounds())) {
-                    console.warn(`[Level1] Update: Collision detected between projectile and enemy at (${enemy.x.toFixed(2)}, ${enemy.y.toFixed(2)})!`);
-                    console.log(`[Level1] Update: Player lives remaining: ${this.lives}`);
                     enemy.takeDamage();
-                    console.log(`[Level1] Update: Enemy destroyed. Remaining enemies in group: ${this.enemyGroup.getLength()}`);
                 }
             }
         });
@@ -251,19 +234,13 @@ class Level1 extends Phaser.Scene {
     }
 
     projectileAttack(speed) {
-        // Create the weapon projectile
         const weapon = this.physics.add.sprite(this.player.x, this.player.y, 'tilemap_sheet', 101);
-
         this.player_projectiles.push(weapon);
-
         weapon.setVelocityX(speed * Math.cos(this.player.body.velocity.angle()));
         weapon.setVelocityY(speed * Math.sin(this.player.body.velocity.angle()));
     }
 
-    // Just call this function when ready to move to next scene
     complete() {
-
-        // Feel free to add code above this line
         this.scene.start("BossLevel", {cur_level: 1, remaining_abilities: this.remaining_abilities, remaining_levels: this.remaining_levels});
     }
 }
