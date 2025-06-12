@@ -502,7 +502,7 @@ class BossLevel extends Phaser.Scene {
             this.complete();
         }
 
-        if (this.spaceKey.isDown && !this.sword_attack_active) {
+        if (this.spaceKey.isDown && !this.sword_attack_active && (time - this.time_last_sword > 500)) {
             this.sword_attack_active = true;
             this.attack_rotation = -Math.PI / 4;
             this.time_last_sword = time;
